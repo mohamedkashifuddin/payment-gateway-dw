@@ -1,0 +1,39 @@
+======================================================================
+PAYMENT GATEWAY INCREMENTAL DATA - VALIDATION REPORT
+======================================================================
+
+Generation Time: 2025-11-10 16:23:15
+Total Rows: 45,000
+Total Size: 7.60MB
+
+=== CONFIGURATION ===
+DAY1_ROWS: 15,000
+DAY2_ROWS: 15,000
+DAY3_ROWS: 15,000
+NUM_CUSTOMERS: 1000
+NUM_MERCHANTS: 500
+
+=== DAY 1 ===
+Total Rows: 15,000
+File Size: 2.53MB
+Unique transaction_id: 15,000
+Unique customer_id: 1,000
+Unique merchant_id: 500
+
+=== DAY 2 ===
+Total Rows: 15,000
+File Size: 2.53MB
+Late-Arriving Rows: 150
+NULL updated_at Rows: 150
+
+=== DAY 3 ===
+Total Rows: 15,000
+File Size: 2.53MB
+Merchant Update Rows: 300
+Timezone Issue Rows: 88
+
+=== DATA QUALITY ISSUES ===
+1. Late-Arriving Data: 150 rows
+2. NULL updated_at: 150 rows
+3. Merchant Updates: 300 rows
+4. Timezone Issues: 88 rows
