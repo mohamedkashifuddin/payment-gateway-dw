@@ -11,12 +11,18 @@ import numpy as np
 DAY1_ROWS = 15000
 DAY2_ROWS = 15000
 DAY3_ROWS = 15000
+DAY4_ROWS = 15000
 
 # Issue percentages (auto-scale with row counts)
 LATE_ARRIVING_PCT = 0.01      # 1% of Day 2 rows
 NULL_UPDATED_AT_PCT = 0.01    # 1% of Day 2 rows
 MERCHANT_UPDATE_PCT = 0.02    # 2% of Day 3 rows
 TIMEZONE_ISSUE_PCT = 0.0133   # 1.33% of Day 3 rows
+
+# Day 4 specific issue counts (fixed numbers)
+DAY4_MERCHANT_UPDATES = 200   # Merchant name updates
+DAY4_STATUS_UPDATES = 100     # Transaction status updates from Day 1-3
+DAY4_LATE_ARRIVING = 50       # Late-arriving from Day 3
 
 # Master data counts
 NUM_CUSTOMERS = 1000
@@ -26,6 +32,7 @@ NUM_MERCHANTS = 500
 DAY1_DATE = "2024-11-01"
 DAY2_DATE = "2024-11-02"
 DAY3_DATE = "2024-11-03"
+DAY4_DATE = "2024-11-04"
 
 # ==================== MASTER DATA LISTS ====================
 
@@ -617,6 +624,242 @@ def generate_day3_data():
     print(f"✅ Day 3 complete: {len(df):,} rows")
     return df
 
+# ==================== DAY 4 DATA GENERATION ====================
+
+def generate_day4_data(df_day1, df_day2, df_day3):
+    """Generate Day 4 data with merchant updates, status updates, and late-arriving data"""
+    print(f"\n🔄 Generating Day 4 data ({DAY4_ROWS:,} rows)...")
+    
+    # Calculate clean rows count
+    clean_count = DAY4_ROWS - DAY4_MERCHANT_UPDATES - DAY4_LATE_ARRIVING
+    
+    print(f"   📊 Clean rows: {clean_count:,}")
+    print(f"   ⚠️  Merchant update rows: {DAY4_MERCHANT_UPDATES:,}")
+    print(f"   ⚠️  Status update rows: {DAY4_STATUS_UPDATES:,} (updates to Day 1-3 data)")
+    print(f"   ⚠️  Late-arriving rows: {DAY4_LATE_ARRIVING:,}")
+    
+    data = []
+    transaction_counter = 1
+    
+    # Generate clean rows
+    for i in range(clean_count):
+        transaction_id = generate_transaction_id(DAY4_DATE, transaction_counter)
+        customer_id = generate_customer_id(random.randint(1, NUM_CUSTOMERS))
+        merchant_id_num = random.randint(1, NUM_MERCHANTS)
+        merchant_id = generate_merchant_id(merchant_id_num)
+        
+        transaction_timestamp = get_random_timestamp(DAY4_DATE)
+        merchant_name = get_merchant_name(merchant_id_num - 1)
+        product_category = random.choice(PRODUCT_CATEGORIES)
+        product_name = get_product_name(product_category)
+        
+        amount = generate_amount()
+        fee_amount = calculate_fee(amount)
+        transaction_status = weighted_random_choice(TRANSACTION_STATUSES)
+        cashback_amount = calculate_cashback(amount, transaction_status)
+        loyalty_points = calculate_loyalty_points(amount, transaction_status)
+        
+        payment_method = weighted_random_choice(PAYMENT_METHODS)
+        device_type = weighted_random_choice(DEVICE_TYPES)
+        location_type = weighted_random_choice(LOCATION_TYPES)
+        currency = "INR"
+        
+        updated_at = transaction_timestamp
+        
+        data.append({
+            'transaction_id': transaction_id,
+            'customer_id': customer_id,
+            'transaction_timestamp': transaction_timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'merchant_id': merchant_id,
+            'merchant_name': merchant_name,
+            'product_category': product_category,
+            'product_name': product_name,
+            'amount': amount,
+            'fee_amount': fee_amount,
+            'cashback_amount': cashback_amount,
+            'loyalty_points': loyalty_points,
+            'payment_method': payment_method,
+            'transaction_status': transaction_status,
+            'device_type': device_type,
+            'location_type': location_type,
+            'currency': currency,
+            'updated_at': updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        
+        transaction_counter += 1
+    
+    # Generate merchant update rows (same merchant_id, updated merchant_name)
+    print(f"   🔄 Adding merchant update rows...")
+    merchant_name_updates_day4 = {
+        "Amazon India": "Amazon India Private Limited",
+        "Flipkart": "Flipkart Private Limited",
+        "Swiggy": "Swiggy Limited",
+        "Zomato": "Zomato Media Private Limited",
+        "MakeMyTrip": "MakeMyTrip India Private Limited",
+        "Paytm Mall": "Paytm E-Commerce Private Limited",
+        "BookMyShow": "BookMyShow Entertainment Private Limited",
+        "Reliance Digital": "Reliance Retail Digital Limited",
+        "Ola": "Ola Fleet Technologies Private Limited",
+        "PhonePe Store": "PhonePe Internet Private Limited",
+        "Meesho": "Meesho Ecommerce Private Limited",
+        "Myntra": "Myntra Designs Private Limited",
+        "Snapdeal": "Snapdeal Limited",
+        "BigBasket": "BigBasket Private Limited",
+        "Goibibo": "Goibibo India Private Limited"
+    }
+    
+    for i in range(DAY4_MERCHANT_UPDATES):
+        transaction_id = generate_transaction_id(DAY4_DATE, transaction_counter)
+        customer_id = generate_customer_id(random.randint(1, NUM_CUSTOMERS))
+        merchant_id_num = random.randint(1, min(NUM_MERCHANTS, len(MERCHANT_NAMES)))
+        merchant_id = generate_merchant_id(merchant_id_num)
+        
+        transaction_timestamp = get_random_timestamp(DAY4_DATE)
+        
+        # Get original merchant name and update it
+        original_name = get_merchant_name(merchant_id_num - 1)
+        merchant_name = merchant_name_updates_day4.get(original_name, f"{original_name} Private Limited")
+        
+        product_category = random.choice(PRODUCT_CATEGORIES)
+        product_name = get_product_name(product_category)
+        
+        amount = generate_amount()
+        fee_amount = calculate_fee(amount)
+        transaction_status = weighted_random_choice(TRANSACTION_STATUSES)
+        cashback_amount = calculate_cashback(amount, transaction_status)
+        loyalty_points = calculate_loyalty_points(amount, transaction_status)
+        
+        payment_method = weighted_random_choice(PAYMENT_METHODS)
+        device_type = weighted_random_choice(DEVICE_TYPES)
+        location_type = weighted_random_choice(LOCATION_TYPES)
+        currency = "INR"
+        
+        updated_at = transaction_timestamp
+        
+        data.append({
+            'transaction_id': transaction_id,
+            'customer_id': customer_id,
+            'transaction_timestamp': transaction_timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'merchant_id': merchant_id,
+            'merchant_name': merchant_name,
+            'product_category': product_category,
+            'product_name': product_name,
+            'amount': amount,
+            'fee_amount': fee_amount,
+            'cashback_amount': cashback_amount,
+            'loyalty_points': loyalty_points,
+            'payment_method': payment_method,
+            'transaction_status': transaction_status,
+            'device_type': device_type,
+            'location_type': location_type,
+            'currency': currency,
+            'updated_at': updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        
+        transaction_counter += 1
+    
+    # Generate late-arriving rows (transaction_timestamp = Day 3, updated_at = Day 4)
+    print(f"   🔄 Adding late-arriving rows from Day 3...")
+    for i in range(DAY4_LATE_ARRIVING):
+        transaction_id = generate_transaction_id(DAY4_DATE, transaction_counter)
+        customer_id = generate_customer_id(random.randint(1, NUM_CUSTOMERS))
+        merchant_id_num = random.randint(1, NUM_MERCHANTS)
+        merchant_id = generate_merchant_id(merchant_id_num)
+        
+        # Transaction happened on Day 3, but recorded on Day 4
+        transaction_timestamp = get_random_timestamp(DAY3_DATE)
+        updated_at = get_random_timestamp(DAY4_DATE)
+        
+        merchant_name = get_merchant_name(merchant_id_num - 1)
+        product_category = random.choice(PRODUCT_CATEGORIES)
+        product_name = get_product_name(product_category)
+        
+        amount = generate_amount()
+        fee_amount = calculate_fee(amount)
+        transaction_status = weighted_random_choice(TRANSACTION_STATUSES)
+        cashback_amount = calculate_cashback(amount, transaction_status)
+        loyalty_points = calculate_loyalty_points(amount, transaction_status)
+        
+        payment_method = weighted_random_choice(PAYMENT_METHODS)
+        device_type = weighted_random_choice(DEVICE_TYPES)
+        location_type = weighted_random_choice(LOCATION_TYPES)
+        currency = "INR"
+        
+        data.append({
+            'transaction_id': transaction_id,
+            'customer_id': customer_id,
+            'transaction_timestamp': transaction_timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'merchant_id': merchant_id,
+            'merchant_name': merchant_name,
+            'product_category': product_category,
+            'product_name': product_name,
+            'amount': amount,
+            'fee_amount': fee_amount,
+            'cashback_amount': cashback_amount,
+            'loyalty_points': loyalty_points,
+            'payment_method': payment_method,
+            'transaction_status': transaction_status,
+            'device_type': device_type,
+            'location_type': location_type,
+            'currency': currency,
+            'updated_at': updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        
+        transaction_counter += 1
+    
+    # Generate status update rows (update existing transactions from Day 1-3)
+    print(f"   🔄 Generating status updates for Day 1-3 transactions...")
+    
+    # Combine all previous days' data
+    all_previous = pd.concat([df_day1, df_day2, df_day3], ignore_index=True)
+    
+    # Filter for Pending transactions (most likely to be updated)
+    pending_transactions = all_previous[all_previous['transaction_status'] == 'Pending']
+    
+    # If not enough Pending, also get some Failed transactions
+    if len(pending_transactions) < DAY4_STATUS_UPDATES:
+        failed_transactions = all_previous[all_previous['transaction_status'] == 'Failed']
+        additional_needed = DAY4_STATUS_UPDATES - len(pending_transactions)
+        if len(failed_transactions) >= additional_needed:
+            failed_sample = failed_transactions.sample(n=additional_needed, random_state=42)
+            transactions_to_update = pd.concat([pending_transactions, failed_sample])
+        else:
+            # If still not enough, just take what we can
+            transactions_to_update = pd.concat([pending_transactions, failed_transactions])
+    else:
+        transactions_to_update = pending_transactions.sample(n=DAY4_STATUS_UPDATES, random_state=42)
+    
+    status_updates_data = []
+    for idx, row in transactions_to_update.iterrows():
+        # Create updated version of the transaction
+        updated_row = row.copy()
+        
+        # Update status: Pending/Failed → Successful (most common real-world scenario)
+        if row['transaction_status'] == 'Pending':
+            updated_row['transaction_status'] = 'Successful'
+        elif row['transaction_status'] == 'Failed':
+            # 70% become Successful, 30% remain Failed
+            updated_row['transaction_status'] = 'Successful' if random.random() < 0.7 else 'Failed'
+        
+        # Recalculate cashback and loyalty points if status changed to Successful
+        if updated_row['transaction_status'] == 'Successful' and row['transaction_status'] != 'Successful':
+            updated_row['cashback_amount'] = calculate_cashback(row['amount'], 'Successful')
+            updated_row['loyalty_points'] = calculate_loyalty_points(row['amount'], 'Successful')
+        
+        # Update the updated_at timestamp to Day 4
+        updated_at = get_random_timestamp(DAY4_DATE)
+        updated_row['updated_at'] = updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        
+        status_updates_data.append(updated_row.to_dict())
+    
+    df_status_updates = pd.DataFrame(status_updates_data)
+    
+    df = pd.DataFrame(data)
+    print(f"✅ Day 4 complete: {len(df):,} new transaction rows")
+    print(f"✅ Day 4 status updates: {len(df_status_updates):,} updated transaction rows")
+    
+    return df, df_status_updates
+
 # ==================== VALIDATION & FILE SAVING ====================
 
 def format_file_size(size_bytes):
@@ -627,7 +870,7 @@ def format_file_size(size_bytes):
         size_bytes /= 1024.0
     return f"{size_bytes:.2f}TB"
 
-def validate_and_save_data(df_day1, df_day2, df_day3):
+def validate_and_save_data(df_day1, df_day2, df_day3, df_day4, df_day4_status_updates):
     """Validate data quality and save to CSV files in timestamped folder"""
     print("\n" + "="*70)
     print("📊 DATA VALIDATION & SAVING")
@@ -638,8 +881,8 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     folder_date = now.strftime("%b%d_%Y")
     folder_time = now.strftime("%Hh%Mm")
     
-    total_rows = len(df_day1) + len(df_day2) + len(df_day3)
-    row_summary = f"{len(df_day1)//1000}K+{len(df_day2)//1000}K+{len(df_day3)//1000}K"
+    total_rows = len(df_day1) + len(df_day2) + len(df_day3) + len(df_day4)
+    row_summary = f"{len(df_day1)//1000}K+{len(df_day2)//1000}K+{len(df_day3)//1000}K+{len(df_day4)//1000}K"
     
     # Create folder (will calculate size after saving files)
     folder_name = f"incremental_data_{folder_date}_{folder_time}_{row_summary}"
@@ -650,6 +893,53 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     
     os.makedirs(output_dir, exist_ok=True)
     print(f"\n📁 Output folder: {output_dir}")
+    
+    # Save Day 1
+    print(f"\n💾 Saving Day 1 data...")
+    day1_path = os.path.join(output_dir, "day1_transactions.csv")
+    df_day1.to_csv(day1_path, index=False, encoding='utf-8')
+    day1_size = os.path.getsize(day1_path)
+    print(f"   ✅ day1_transactions.csv saved ({format_file_size(day1_size)})")
+    
+    # Save Day 2
+    print(f"\n💾 Saving Day 2 data...")
+    day2_path = os.path.join(output_dir, "day2_transactions.csv")
+    df_day2.to_csv(day2_path, index=False, encoding='utf-8')
+    day2_size = os.path.getsize(day2_path)
+    print(f"   ✅ day2_transactions.csv saved ({format_file_size(day2_size)})")
+    
+    # Save Day 3
+    print(f"\n💾 Saving Day 3 data...")
+    day3_path = os.path.join(output_dir, "day3_transactions.csv")
+    df_day3.to_csv(day3_path, index=False, encoding='utf-8')
+    day3_size = os.path.getsize(day3_path)
+    print(f"   ✅ day3_transactions.csv saved ({format_file_size(day3_size)})")
+    
+    # Save Day 4 - New transactions
+    print(f"\n💾 Saving Day 4 data (new transactions)...")
+    day4_path = os.path.join(output_dir, "day4_transactions.csv")
+    df_day4.to_csv(day4_path, index=False, encoding='utf-8')
+    day4_size = os.path.getsize(day4_path)
+    print(f"   ✅ day4_transactions.csv saved ({format_file_size(day4_size)})")
+    
+    # Save Day 4 - Status updates (separate file for clarity)
+    print(f"\n💾 Saving Day 4 status updates...")
+    day4_updates_path = os.path.join(output_dir, "day4_status_updates.csv")
+    df_day4_status_updates.to_csv(day4_updates_path, index=False, encoding='utf-8')
+    day4_updates_size = os.path.getsize(day4_updates_path)
+    print(f"   ✅ day4_status_updates.csv saved ({format_file_size(day4_updates_size)})")
+    print(f"   ℹ️  This file contains {len(df_day4_status_updates)} updated transactions from Day 1-3")
+    
+    # Calculate total size and rename folder
+    total_size = day1_size + day2_size + day3_size + day4_size + day4_updates_size
+    total_size_str = format_file_size(total_size)
+    
+    # Rename folder with size info
+    new_folder_name = f"incremental_data_{folder_date}_{folder_time}_{row_summary}_{total_size_str.replace('.', '_')}"
+    new_output_dir = os.path.join(current_dir, new_folder_name)
+    
+    os.rename(output_dir, new_output_dir)
+    print(f"\n📦 Final folder: {new_folder_name}")
     
     # Save Day 1
     print(f"\n💾 Saving Day 1 data...")
@@ -722,8 +1012,8 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     
     # Merchant updates detection
     merchant_update_keywords = ['Pvt Ltd', 'Ltd', 'Internet', 'Media', 'Technologies', 'Entertainment', 'Retail', 'E-Commerce', 'Fleet']
-    merchant_updates = df_day3[df_day3['merchant_name'].str.contains('|'.join(merchant_update_keywords), na=False)]
-    print(f"⚠️  Merchant update rows (name contains 'Pvt Ltd', 'Ltd', etc.): {len(merchant_updates):,}")
+    merchant_updates_day3 = df_day3[df_day3['merchant_name'].str.contains('|'.join(merchant_update_keywords), na=False)]
+    print(f"⚠️  Merchant update rows (name contains 'Pvt Ltd', 'Ltd', etc.): {len(merchant_updates_day3):,}")
     
     # Timezone issues detection
     df_day3_temp = df_day3.copy()
@@ -731,20 +1021,57 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     timezone_issues = len(df_day3_temp[df_day3_temp['transaction_timestamp'] < DAY3_DATE])
     print(f"⚠️  Timezone issue rows (date < {DAY3_DATE}): {timezone_issues:,}")
     
-    print(f"Clean rows: {len(df_day3) - len(merchant_updates) - timezone_issues:,}")
+    print(f"Clean rows: {len(df_day3) - len(merchant_updates_day3) - timezone_issues:,}")
+    
+    # Day 4 Validation
+    print("\n=== DAY 4 VALIDATION ===")
+    print(f"Total New Transaction Rows: {len(df_day4):,}")
+    print(f"Unique transaction_id: {df_day4['transaction_id'].nunique():,}")
+    
+    # Merchant updates detection
+    merchant_update_keywords_day4 = ['Private Limited', 'Limited']
+    merchant_updates_day4 = df_day4[df_day4['merchant_name'].str.contains('|'.join(merchant_update_keywords_day4), na=False)]
+    print(f"⚠️  Merchant update rows (name contains 'Private Limited'): {len(merchant_updates_day4):,}")
+    
+    # Late-arriving detection
+    df_day4_temp = df_day4.copy()
+    df_day4_temp['transaction_timestamp'] = pd.to_datetime(df_day4_temp['transaction_timestamp'])
+    late_arriving_day4 = len(df_day4_temp[df_day4_temp['transaction_timestamp'] < DAY4_DATE])
+    print(f"⚠️  Late-arriving rows (date < {DAY4_DATE}): {late_arriving_day4:,}")
+    
+    print(f"Clean rows: {len(df_day4) - len(merchant_updates_day4) - late_arriving_day4:,}")
+    
+    # Status updates validation
+    print(f"\n⚠️  Status Updates: {len(df_day4_status_updates):,} transactions updated from Day 1-3")
+    print(f"   - Original statuses being updated:")
+    if len(df_day4_status_updates) > 0:
+        # Need to compare with original data - merge back to find original status
+        all_previous = pd.concat([df_day1, df_day2, df_day3], ignore_index=True)
+        merged = df_day4_status_updates.merge(
+            all_previous[['transaction_id', 'transaction_status']], 
+            on='transaction_id', 
+            suffixes=('_new', '_old')
+        )
+        if 'transaction_status_old' in merged.columns:
+            print(f"     Pending updates: {(merged['transaction_status_old'] == 'Pending').sum():,}")
+            print(f"     Failed updates: {(merged['transaction_status_old'] == 'Failed').sum():,}")
+            print(f"   - New status after update:")
+            print(f"     Successful: {(df_day4_status_updates['transaction_status'] == 'Successful').sum():,}")
+            print(f"     Failed: {(df_day4_status_updates['transaction_status'] == 'Failed').sum():,}")
     
     # Overall Summary
     print("\n" + "="*70)
     print("📈 OVERALL SUMMARY")
     print("="*70)
-    print(f"Total Rows Generated: {total_rows:,}")
-    print(f"Total CSV Files: 3")
+    print(f"Total New Transaction Rows: {total_rows:,}")
+    print(f"Total Status Update Rows: {len(df_day4_status_updates):,}")
+    print(f"Total CSV Files: 5 (day1, day2, day3, day4, day4_status_updates)")
     print(f"Total Size: {total_size_str}")
     print(f"Output Location: {new_output_dir}")
-    print(f"\nAll transaction_ids unique: {df_day1['transaction_id'].nunique() + df_day2['transaction_id'].nunique() + df_day3['transaction_id'].nunique() == total_rows}")
+    print(f"\nAll transaction_ids unique: {df_day1['transaction_id'].nunique() + df_day2['transaction_id'].nunique() + df_day3['transaction_id'].nunique() + df_day4['transaction_id'].nunique() == total_rows}")
     
     # Check for duplicate transaction_ids across days
-    all_txn_ids = pd.concat([df_day1['transaction_id'], df_day2['transaction_id'], df_day3['transaction_id']])
+    all_txn_ids = pd.concat([df_day1['transaction_id'], df_day2['transaction_id'], df_day3['transaction_id'], df_day4['transaction_id']])
     duplicates = all_txn_ids[all_txn_ids.duplicated()]
     if len(duplicates) > 0:
         print(f"⚠️  WARNING: Found {len(duplicates)} duplicate transaction_ids across days!")
@@ -755,11 +1082,21 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     print("\n" + "="*70)
     print("🐛 DATA QUALITY ISSUES INJECTED (For Blog 2)")
     print("="*70)
-    print(f"1. Late-Arriving Data (Day 2): {late_arriving:,} rows")
-    print(f"2. NULL updated_at (Day 2): {df_day2['updated_at'].isna().sum():,} rows")
-    print(f"3. Merchant Updates (Day 3): {len(merchant_updates):,} rows")
-    print(f"4. Timezone Issues (Day 3): {timezone_issues:,} rows")
-    print(f"\nTotal Issue Rows: {late_arriving + df_day2['updated_at'].isna().sum() + len(merchant_updates) + timezone_issues:,}")
+    print(f"DAY 2:")
+    print(f"  1. Late-Arriving Data: {late_arriving:,} rows")
+    print(f"  2. NULL updated_at: {df_day2['updated_at'].isna().sum():,} rows")
+    print(f"\nDAY 3:")
+    print(f"  3. Merchant Updates: {len(merchant_updates_day3):,} rows")
+    print(f"  4. Timezone Issues: {timezone_issues:,} rows")
+    print(f"\nDAY 4:")
+    print(f"  5. Merchant Name Updates: {len(merchant_updates_day4):,} rows")
+    print(f"  6. Transaction Status Updates: {len(df_day4_status_updates):,} rows (from Day 1-3)")
+    print(f"  7. Late-Arriving Data: {late_arriving_day4:,} rows")
+    
+    total_issues = (late_arriving + df_day2['updated_at'].isna().sum() + 
+                    len(merchant_updates_day3) + timezone_issues + 
+                    len(merchant_updates_day4) + len(df_day4_status_updates) + late_arriving_day4)
+    print(f"\nTotal Issue Rows: {total_issues:,}")
     
     # Save validation report
     print("\n💾 Saving validation report...")
@@ -769,13 +1106,15 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
         f.write("PAYMENT GATEWAY INCREMENTAL DATA - VALIDATION REPORT\n")
         f.write("="*70 + "\n\n")
         f.write(f"Generation Time: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Total Rows: {total_rows:,}\n")
+        f.write(f"Total New Transaction Rows: {total_rows:,}\n")
+        f.write(f"Total Status Update Rows: {len(df_day4_status_updates):,}\n")
         f.write(f"Total Size: {total_size_str}\n\n")
         
         f.write("=== CONFIGURATION ===\n")
         f.write(f"DAY1_ROWS: {DAY1_ROWS:,}\n")
         f.write(f"DAY2_ROWS: {DAY2_ROWS:,}\n")
         f.write(f"DAY3_ROWS: {DAY3_ROWS:,}\n")
+        f.write(f"DAY4_ROWS: {DAY4_ROWS:,}\n")
         f.write(f"NUM_CUSTOMERS: {NUM_CUSTOMERS}\n")
         f.write(f"NUM_MERCHANTS: {NUM_MERCHANTS}\n\n")
         
@@ -795,14 +1134,28 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
         f.write("=== DAY 3 ===\n")
         f.write(f"Total Rows: {len(df_day3):,}\n")
         f.write(f"File Size: {format_file_size(day3_size)}\n")
-        f.write(f"Merchant Update Rows: {len(merchant_updates):,}\n")
+        f.write(f"Merchant Update Rows: {len(merchant_updates_day3):,}\n")
         f.write(f"Timezone Issue Rows: {timezone_issues:,}\n\n")
         
+        f.write("=== DAY 4 ===\n")
+        f.write(f"Total New Transaction Rows: {len(df_day4):,}\n")
+        f.write(f"File Size: {format_file_size(day4_size)}\n")
+        f.write(f"Merchant Update Rows: {len(merchant_updates_day4):,}\n")
+        f.write(f"Late-Arriving Rows: {late_arriving_day4:,}\n")
+        f.write(f"Status Update File Size: {format_file_size(day4_updates_size)}\n")
+        f.write(f"Status Update Rows: {len(df_day4_status_updates):,}\n\n")
+        
         f.write("=== DATA QUALITY ISSUES ===\n")
-        f.write(f"1. Late-Arriving Data: {late_arriving:,} rows\n")
-        f.write(f"2. NULL updated_at: {df_day2['updated_at'].isna().sum():,} rows\n")
-        f.write(f"3. Merchant Updates: {len(merchant_updates):,} rows\n")
-        f.write(f"4. Timezone Issues: {timezone_issues:,} rows\n")
+        f.write(f"Day 2:\n")
+        f.write(f"  1. Late-Arriving Data: {late_arriving:,} rows\n")
+        f.write(f"  2. NULL updated_at: {df_day2['updated_at'].isna().sum():,} rows\n")
+        f.write(f"Day 3:\n")
+        f.write(f"  3. Merchant Updates: {len(merchant_updates_day3):,} rows\n")
+        f.write(f"  4. Timezone Issues: {timezone_issues:,} rows\n")
+        f.write(f"Day 4:\n")
+        f.write(f"  5. Merchant Name Updates: {len(merchant_updates_day4):,} rows\n")
+        f.write(f"  6. Transaction Status Updates: {len(df_day4_status_updates):,} rows\n")
+        f.write(f"  7. Late-Arriving Data: {late_arriving_day4:,} rows\n")
     
     print(f"   ✅ validation_report.txt saved")
     
@@ -811,6 +1164,7 @@ def validate_and_save_data(df_day1, df_day2, df_day3):
     print("="*70)
     print(f"\n📂 All files saved in: {new_output_dir}")
     print(f"\n✅ Ready for BigQuery upload!")
+    print(f"✅ Day 4 includes merchant updates, status updates, and late-arriving data!")
     print(f"✅ Ready for Blog 2: Incremental Load Patterns & Mistakes!")
     
     return new_output_dir
@@ -826,14 +1180,21 @@ def main():
     print(f"  - Day 1 Rows: {DAY1_ROWS:,}")
     print(f"  - Day 2 Rows: {DAY2_ROWS:,}")
     print(f"  - Day 3 Rows: {DAY3_ROWS:,}")
-    print(f"  - Total Rows: {DAY1_ROWS + DAY2_ROWS + DAY3_ROWS:,}")
+    print(f"  - Day 4 Rows: {DAY4_ROWS:,}")
+    print(f"  - Total Rows: {DAY1_ROWS + DAY2_ROWS + DAY3_ROWS + DAY4_ROWS:,}")
     print(f"  - Customers: {NUM_CUSTOMERS}")
     print(f"  - Merchants: {NUM_MERCHANTS}")
     print(f"\nData Quality Issues:")
-    print(f"  - Late-Arriving (Day 2): {LATE_ARRIVING_PCT*100:.1f}% = ~{int(DAY2_ROWS * LATE_ARRIVING_PCT):,} rows")
-    print(f"  - NULL updated_at (Day 2): {NULL_UPDATED_AT_PCT*100:.1f}% = ~{int(DAY2_ROWS * NULL_UPDATED_AT_PCT):,} rows")
-    print(f"  - Merchant Updates (Day 3): {MERCHANT_UPDATE_PCT*100:.1f}% = ~{int(DAY3_ROWS * MERCHANT_UPDATE_PCT):,} rows")
-    print(f"  - Timezone Issues (Day 3): {TIMEZONE_ISSUE_PCT*100:.2f}% = ~{int(DAY3_ROWS * TIMEZONE_ISSUE_PCT):,} rows")
+    print(f"  Day 2:")
+    print(f"    - Late-Arriving: {LATE_ARRIVING_PCT*100:.1f}% = ~{int(DAY2_ROWS * LATE_ARRIVING_PCT):,} rows")
+    print(f"    - NULL updated_at: {NULL_UPDATED_AT_PCT*100:.1f}% = ~{int(DAY2_ROWS * NULL_UPDATED_AT_PCT):,} rows")
+    print(f"  Day 3:")
+    print(f"    - Merchant Updates: {MERCHANT_UPDATE_PCT*100:.1f}% = ~{int(DAY3_ROWS * MERCHANT_UPDATE_PCT):,} rows")
+    print(f"    - Timezone Issues: {TIMEZONE_ISSUE_PCT*100:.2f}% = ~{int(DAY3_ROWS * TIMEZONE_ISSUE_PCT):,} rows")
+    print(f"  Day 4:")
+    print(f"    - Merchant Name Updates: {DAY4_MERCHANT_UPDATES:,} rows")
+    print(f"    - Transaction Status Updates: {DAY4_STATUS_UPDATES:,} rows (from Day 1-3)")
+    print(f"    - Late-Arriving: {DAY4_LATE_ARRIVING:,} rows")
     
     # Set random seed for reproducibility
     random.seed(42)
@@ -841,13 +1202,16 @@ def main():
     
     start_time = datetime.now()
     
-    # Generate data
+    # Generate data for Day 1-3
     df_day1 = generate_day1_data()
     df_day2 = generate_day2_data()
     df_day3 = generate_day3_data()
     
+    # Generate Day 4 (needs previous days' data for status updates)
+    df_day4, df_day4_status_updates = generate_day4_data(df_day1, df_day2, df_day3)
+    
     # Validate and save
-    output_dir = validate_and_save_data(df_day1, df_day2, df_day3)
+    output_dir = validate_and_save_data(df_day1, df_day2, df_day3, df_day4, df_day4_status_updates)
     
     end_time = datetime.now()
     duration = (end_time - start_time).total_seconds()
@@ -855,12 +1219,16 @@ def main():
     print(f"\n⏱️  Total execution time: {duration:.2f} seconds")
     print(f"\n🎯 Next Steps:")
     print(f"   1. Navigate to: {output_dir}")
-    print(f"   2. Upload CSV files to BigQuery Bronze layer")
-    print(f"   3. Create tables: raw_transactions_day1, raw_transactions_day2, raw_transactions_day3")
-    print(f"   4. Start building incremental load SQL for Blog 2!")
+    print(f"   2. Upload CSV files to BigQuery Bronze layer:")
+    print(f"      - day1_transactions.csv → raw_transactions_day1")
+    print(f"      - day2_transactions.csv → raw_transactions_day2")
+    print(f"      - day3_transactions.csv → raw_transactions_day3")
+    print(f"      - day4_transactions.csv → raw_transactions_day4")
+    print(f"      - day4_status_updates.csv → raw_transactions_day4_updates")
+    print(f"   3. Start building incremental load SQL for Blog 2!")
+    print(f"   4. Day 4 demonstrates CDC patterns with status updates!")
     
     print("\n" + "="*70)
-    
 
 if __name__ == "__main__":
     main()

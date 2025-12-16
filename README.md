@@ -18,15 +18,15 @@ This repository contains all code and documentation for the **Payment Gateway Da
 
 ### Blog Posts
 
-| Part | Title | Status | Link |
-|------|-------|--------|------|
-| 1 | Building a Payment Gateway Data Warehouse from Scratch | ✅ Published | [Read Blog](#) |
-| 2 | 5 SQL Mistakes That Break Incremental Loads | 🔜 Coming Soon | - |
-| 3 | Benchmarking Incremental Load Strategies | 🔜 Coming Soon | - |
-| 4 | Production-Ready Incremental Loads | 🔜 Coming Soon | - |
-| 5 | When to Graduate from BigQuery SQL to PySpark | 🔜 Coming Soon | - |
-| 6 | PySpark at Scale: Delta Lake & Optimization | 🔜 Coming Soon | - |
-
+| Part | Title | Status | Link | Documentation |
+|------|-------|--------|------|---------------|
+| 1 | Building a Payment Gateway Data Warehouse from Scratch | ✅ Published | [Read Blog](#) | - |
+| 2A | 4 SQL Strategies That Prevent Incremental Load Failures | ✅ Published | [Read Blog 2A](#) | [📖 Strategy Guide](docs/blog2a_strategies.md) |
+| 2B | Production Incremental Loads: Bronze→Silver→Gold Pipeline | ✅ Published | [Read Blog 2B](#) | [📖 Implementation Guide](docs/blog2b_implementation.md) |
+| 3 | Migrating from SQL to PySpark | 🔜 Coming Soon | - | - |
+| 4 | PySpark Performance Optimization | 🔜 Coming Soon | - | - |
+| 5 | Benchmarking Incremental Load Strategies | 🔜 Coming Soon | - | - |
+| 6 | Production-Ready Data Quality Framework | 🔜 Coming Soon | - | - |
 ---
 
 ## 🎯 What You'll Build
@@ -46,7 +46,27 @@ A production-ready payment gateway data warehouse using:
 
 ---
 
-## 🚀 Quick Start
+ ## 🔗 Quick Links by Blog 🚀 
+
+### Blog 1: Dimensional Modeling
+- **Code:** `sql/blog1_dimensional_model/`
+- **Docs:** Covered in main README above
+- **What you'll build:** Star schema with 1 fact + 6 dimensions
+
+### Blog 2A: Incremental Load Strategies
+- **Code:** `sql/blog2_incremental_strategies/FILE 01-11`
+- **Docs:** [Strategy Guide](docs/blog2a_strategies.md)
+- **What you'll learn:** 4 strategies, 7 mistakes, decision framework
+
+### Blog 2B: Production Implementation
+- **Code:** `sql/blog2_incremental_strategies/FILE 09, 16-26` + `workflows/`
+- **Docs:** [Implementation Guide](docs/blog2b_implementation.md)
+- **What you'll build:** Complete Bronze→Silver→Gold pipeline with automation
+
+### Upcoming Blogs
+- **Blog 3-4:** PySpark migration & optimization
+- **Blog 5:** Performance benchmarking
+- **Blog 6:** Data quality framework
 
 ### Prerequisites
 
@@ -125,23 +145,33 @@ payment-gateway-dw/
 │
 ├── data/
 │   ├── README.md                          # Dataset download instructions
+│   ├── digital_wallet_transactions.csv    # Blog 1 dataset
+│   ├── raw_transactions_day1.csv          # Blog 2A/2B: Day 1 data  ← NEW
+│   ├── raw_transactions_day2.csv          # Blog 2A/2B: Day 2 data  ← NEW
+│   ├── raw_transactions_day3.csv          # Blog 2A/2B: Day 3 data  ← NEW
 │   └── .gitkeep                           # Keep folder in git
 │
 ├── sql/
-│   ├── 01_bronze_raw_transactions.sql     # Bronze: Load raw CSV
-│   ├── 02_silver_cleaned_transactions.sql # Silver: Clean & transform
-│   ├── 03_gold_dim_customers.sql          # Gold: Customer dimension
-│   ├── 03_gold_dim_merchants.sql          # Gold: Merchant dimension
-│   ├── 03_gold_dim_payment_methods.sql    # Gold: Payment method dimension
-│   ├── 03_gold_dim_transaction_status.sql # Gold: Status dimension
-│   ├── 03_gold_dim_location.sql           # Gold: Location dimension
-│   ├── 03_gold_dim_date.sql               # Gold: Date dimension (2015-2030)
-│   ├── 04_gold_fact_transactions.sql      # Gold: Fact table (core)
-│   └── 05_analytics_queries.sql           # Sample business queries
+│   ├── blog1_dimensional_model/           # Blog 1 scripts
+│   │   ├── README.md
+│   │   ├── 01_bronze_raw_transactions.sql
+│   │   ├── ... (10 files total)
+│   │   └── 05_analytics_queries.sql
+│   │
+│   └── blog2_incremental_strategies/      # Blog 2A & 2B scripts  ← NEW
+│       ├── README.md                       # Complete guide for both 2A & 2B
+│       ├── FILE 01-15 (30 SQL files)       # See folder README for details
+│       └── (Organized execution in README)
+│
+├── workflows/                              # Blog 2B: Cloud Workflows  ← NEW
+│   ├── README.md                          # Deployment instructions
+│   ├── create-tables-workflow.yaml
+│   └── daily-etl-workflow.yaml
 │
 ├── docs/
-│   ├── data_model.md                      # Data model documentation
-│   ├── architecture.md                    # Medallion architecture details
+│   ├── data_model.md                      # Blog 1 data model
+│   ├── blog2a_strategies.md               # Blog 2A concepts & strategies  ← NEW
+│   ├── blog2b_implementation.md           # Blog 2B production guide  ← NEW
 │   └── troubleshooting.md                 # Common issues & fixes
 │
 └── images/
@@ -400,14 +430,31 @@ If this project helped you:
 
 ## 🔮 What's Coming Next
 
-**Blog 2:** 5 SQL Mistakes That Break Incremental Loads  
-*Dropping next week. Follow on Medium for updates!*
+**Blog 2A & 2B:** 4 SQL Strategies + Production Implementation  
+*Published! Check the series overview above for links.*
 
-**Topics covered in the series:**
-- Incremental load optimization (timestamp-based, CDC, MERGE)
-- Performance benchmarking (10M, 100M, 1B rows)
-- Production best practices (monitoring, data quality, late data)
-- Scaling to PySpark on Dataproc (Blogs 5-6)
+**Topics covered in Blogs 2A & 2B:**
+- 4 incremental load strategies (Timestamp, MERGE, DELETE+INSERT, INSERT OVERWRITE)
+- 7 SQL mistakes that cause silent data loss
+- Watermark-driven pattern for production
+- Complete Bronze→Silver→Gold pipeline
+- Cloud Workflows automation
+- Production monitoring & validation
+
+**📖 Strategy Guide:** See [docs/blog2a_strategies.md](docs/blog2a_strategies.md)  
+**📖 Implementation Guide:** See [docs/blog2b_implementation.md](docs/blog2b_implementation.md)
+
+---
+
+**Blog 3:** Migrating from SQL to PySpark  
+*Coming next! Learn when and how to graduate from BigQuery SQL to PySpark on Dataproc.*
+
+**Upcoming topics in the series:**
+- When to migrate from SQL to PySpark (volume triggers, cost analysis)
+- PySpark equivalents of SQL patterns
+- Performance optimization (caching, partitioning, broadcasting)
+- Benchmarking incremental strategies at scale
+- Production data quality frameworks
 
 **Want to stay updated?**  
 Watch this repository or follow me on Medium!
